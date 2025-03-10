@@ -36,6 +36,9 @@ android {
 
 dependencies {
 
+    // 吐司框架：https://github.com/getActivity/Toaster
+    implementation 'com.github.getActivity:Toaster:12.6'
+
     implementation libs.androidx.core.ktx
     implementation libs.androidx.appcompat
     implementation libs.material
