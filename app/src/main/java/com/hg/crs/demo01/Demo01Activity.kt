@@ -7,8 +7,6 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.hg.crs.R
-import com.hg.crs.demo01.api.City
-import com.hg.crs.demo01.api.userServiceApi
 
 @SuppressLint("MissingInflatedId", "StaticFieldLeak", "SetTextI18n")
 class Demo01Activity : AppCompatActivity() {

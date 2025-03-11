@@ -1,4 +1,4 @@
-package com.hg.crs.demo01.api
+package com.hg.crs.demo02
 
 import android.util.Log
 import com.squareup.moshi.Json
@@ -8,7 +8,6 @@ import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
-import retrofit2.http.Query
 
 data class City(
     @Json(name = "id") val id: Int,
@@ -35,8 +34,6 @@ val userServiceApi: UserServiceApi by lazy {
 }
 
 interface UserServiceApi {
-
     @GET("/api/china/")
-    fun loadUser(): Call<List<City>>
-
+    suspend fun getCities(): List<City>
 }

@@ -21,6 +21,13 @@
                 android:text="01:AsyncTask异步任务-更新网络数据到页面"
                 android:textColor="@color/white"
                 android:textSize="18sp" />
+            <Button
+                android:id="@+id/btn_dem02"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="02:协程和挂起函数的简单使用"
+                android:textColor="@color/white"
+                android:textSize="18sp" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
