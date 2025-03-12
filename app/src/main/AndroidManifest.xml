@@ -23,6 +23,9 @@
             android:name=".demo02.Demo02Activity"
             android:exported="true" />
         <activity
+            android:name=".demo03.Demo03Activity"
+            android:exported="true" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
