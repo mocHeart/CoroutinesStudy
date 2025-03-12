@@ -35,6 +35,13 @@
                 android:text="03:MainScope协程作用域-变量方式"
                 android:textColor="@color/white"
                 android:textSize="18sp" />
+            <Button
+                android:id="@+id/btn_dem04"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="04:MainScope协程作用域-继承方式"
+                android:textColor="@color/white"
+                android:textSize="18sp" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
