@@ -25,6 +25,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    dataBinding {
+        //noinspection DataBindingWithoutKapt
+        enabled = true
+    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
@@ -37,7 +41,11 @@ android {
 dependencies {
 
     // 吐司框架：https://github.com/getActivity/Toaster
-    implementation 'com.github.getActivity:Toaster:12.6'
+    implementation libs.github.toaster
+
+    // kotlin支持(委托方式等)
+    implementation libs.androidx.activity.activity.ktx
+    implementation libs.androidx.fragment.fragment.ktx
 
     implementation libs.androidx.core.ktx
     implementation libs.androidx.appcompat

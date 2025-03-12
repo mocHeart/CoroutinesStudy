@@ -5,7 +5,6 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.OkHttpClient
-import retrofit2.Call
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
 
@@ -18,7 +17,7 @@ val moshi = Moshi.Builder()
     .add(KotlinJsonAdapterFactory()) // 添加 Kotlin 支持
     .build()
 
-val userServiceApi: UserServiceApi by lazy {
+val cityServiceApi: CityServiceApi by lazy {
     val retrofit = retrofit2.Retrofit.Builder()
         .client(OkHttpClient().newBuilder().addInterceptor {
             it.proceed(it.request()).apply {
@@ -30,10 +29,10 @@ val userServiceApi: UserServiceApi by lazy {
         .baseUrl("http://guolin.tech/")
         .addConverterFactory(MoshiConverterFactory.create(moshi))
         .build()
-    retrofit.create(UserServiceApi::class.java)
+    retrofit.create(CityServiceApi::class.java)
 }
 
-interface UserServiceApi {
+interface CityServiceApi {
     @GET("/api/china/")
     suspend fun getCities(): List<City>
 }

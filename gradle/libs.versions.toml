@@ -1,5 +1,7 @@
 [versions]
 agp = "8.5.0"
+githubToaster = "12.8"
+androidxFragmentKtx = "1.6.0"
 kotlin = "1.9.24"
 coreKtx = "1.10.1"
 junit = "4.13.2"
@@ -14,7 +16,10 @@ converterMoshi = "2.11.0"
 moshiKotlin = "1.15.2"
 
 [libraries]
+androidx-activity-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activity" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-fragment-fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "androidxFragmentKtx" }
+github-toaster = { module = "com.github.getActivity:Toaster", version.ref = "githubToaster" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

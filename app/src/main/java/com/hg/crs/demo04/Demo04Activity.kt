@@ -6,7 +6,7 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.hg.crs.R
-import com.hg.crs.demo02.userServiceApi
+import com.hg.crs.demo02.cityServiceApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
@@ -29,7 +29,7 @@ class Demo04Activity : AppCompatActivity(), CoroutineScope by MainScope() {
             it.setOnClickListener {
                 launch() {
                     // 在协程作用域里的挂机函数会自动协程支持
-                    val cities = userServiceApi.getCities()
+                    val cities = cityServiceApi.getCities()
                     nameTv.text = "id: ${cities?.get(4)?.id} => City: ${cities?.get(4)?.name}"
                     try {
                         delay(10000)

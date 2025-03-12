@@ -28,7 +28,7 @@ class Demo02Activity : AppCompatActivity() {
             it.setOnClickListener {
                 GlobalScope.launch(Dispatchers.Main) {
                     val cities = withContext(Dispatchers.IO) {
-                        userServiceApi.getCities()
+                        cityServiceApi.getCities()
                     }
                     nameTv.text = "id: ${cities?.get(1)?.id} => City: ${cities?.get(1)?.name}"
                 }
@@ -49,7 +49,7 @@ class Demo02Activity : AppCompatActivity() {
     }
 
     private suspend fun get() = withContext(Dispatchers.IO) {
-        userServiceApi.getCities()
+        cityServiceApi.getCities()
     }
 
     private fun show(cities: List<City>) {
