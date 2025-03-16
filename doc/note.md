@@ -178,4 +178,30 @@
 
   <img src="img/Job的生命周期.png" alt="4" style="zoom:55%;" />
 
-  
++ **coroutineScope与CoroutineScope**
+
+  `coroutineScope(){...}`协程的作用域构建器，会继承父协程的作用域，会等待其协程体以及所有子协程结束。
+
+  `val scope=CoroutineScope(Dispatchers.Default)`自定义协程作用域，不会继承父协程的作用域，能通过scope取消协程。
+
+#### 3.5 协程的取消
+
+1. 取消作用域会取消它的子协程；
+2. 被取消的子协程并不会影响其余兄弟协程；
+3. 协程通过抛出一个特殊的异常`CancellationException`来处理取消操作；
+4. 所有`kotlinx.coroutines`中的挂起函数（`withContext`、`delay`等）都是可取消的。	
+
++ **CPU密集型任务取消**
+  1.  `isActive`：是一个可以被使用在CoroutineScope中的扩展属性，检查Job是否处于活跃状态；
+  1.  `ensureActive()` 如果job处于非活跃状态，这个方法会立即抛出异常，异常会静默掉，需要try-catch捕获；
+  1.  `yield`函数会检查所在协程的状态，如果已经取消，则抛出`CancellationException`予以响应。此外，它还会尝试出让线程的执行权，给其他协程提供执行机会。
++ **协程取消的副作用**
+  1. 在finally中释放资源；
+  2. ==use()==函数：该函数只能被实现了`Closeable`的对象使用，程序结束的时候会自动调用`close`方法，适合文件对象。
++ **不能取消的任务**
+  1. 处于取消中状态的协程不能够挂起（运行不能取消的代码），当协程被取消后需要调用挂起函数，我们需要将清理任务的代码放置于NonCancellable CoroutineContext中。
+  2. 这样会挂起运行中的代码，并保持协程的取消中状态直到任务处理完成。
++ **超时任务**
+  1. 很多情况下取消一个协程的理由是它有可能超时；
+  2. `withTimeoutOrNull`通过返回`null`来进行超时操作，从而替代抛出一个异常。
+
