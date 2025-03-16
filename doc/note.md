@@ -205,3 +205,47 @@
   1. 很多情况下取消一个协程的理由是它有可能超时；
   2. `withTimeoutOrNull`通过返回`null`来进行超时操作，从而替代抛出一个异常。
 
+### 4. 协程上下文
+
++ **协程的上下文是什么？**
+
+  `CoroutineContext`是一组用于定义协程行为的元素。它由如下几项构成：
+
+  1. ==Job==：控制协程的生命周期；
+  2. ==CoroutineDispatcher==：向合适的线程分发任务；
+  3. ==CoroutineName==：协程的名称，调试的时候很有用；
+  4. ==CoroutineExceptionHandler==：处理未被捕捉的异常。
+
++ **组合上下文中的元素**
+
+  有时我们需要在协程上下文中定义多个元素。我们可以使用+操作符来实现。比如说，我们可以显式指定一个调度器来启动协程并且同时显式指定一个命名：
+
+  ```kotlin
+  @Test
+  fun `test CoroutineContext`() = runBlocking<Unit> {
+      launch(Dispatchers.Default + CoroutineName("C3Name")) {
+          println("I'm working in thread ${Thread.currentThread().name}")
+      }
+  }
+  ```
+
++ **协程上下文的继承**
+
+  对于新创建的协程，它的 CoroutineContext 会包含一个全新的Job实例，它会帮助我们控制协程的生命周期。而==剩下的元素会从CoroutineContext的父类继承==，该父类可能是另外一个协程或者创建该协程的CoroutineScope。
+
+  ```kotlin
+  @Test
+  fun `test CoroutineContext extend`() = runBlocking {
+      val scope = CoroutineScope(Job() + Dispatchers.IO + CoroutineName("C3Name"))
+      val job = scope.launch {
+          println("${coroutineContext[Job]}~${Thread.currentThread().name}")
+          val result = async {
+              println("${coroutineContext[Job]}~${Thread.currentThread().name}")
+              "OK"
+          }.await()
+      }
+      job.join()
+  }
+  ```
+
+  
