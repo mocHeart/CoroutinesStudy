@@ -80,7 +80,7 @@
 
   + **协程的挂起和恢复**
   
-    常规函数基础操作包括：invoke（或cal）和return，协程新增了suspend和resume：
+    常规函数基础操作包括：invoke（或call）和return，协程新增了suspend和resume：
   
     ==suspend==：也称为挂起或暂停，用于暂停执行当前协程，并保存所有局部变量；
     
@@ -231,7 +231,7 @@
 
 + **协程上下文的继承**
 
-  对于新创建的协程，它的 CoroutineContext 会包含一个全新的Job实例，它会帮助我们控制协程的生命周期。而==剩下的元素会从CoroutineContext的父类继承==，该父类可能是另外一个协程或者创建该协程的CoroutineScope。
+  对于新创建的协程，它的 `CoroutineContext` 会包含一个全新的Job实例，它会帮助我们控制协程的生命周期。而==剩下的元素会从`CoroutineContext`的父类继承==，该父类可能是另外一个协程或者创建该协程的CoroutineScope。
 
   ```kotlin
   @Test
@@ -248,4 +248,82 @@
   }
   ```
 
+  ==协程的上下文 = 默认值 + 继承的CoroutineContext + 参数==
   
+  1. 一些元素包含默认值：`Dispatchers.Default`是默认的`CoroutineDispatcher`，以及"coroutine"作为默认的`CoroutineName`；
+  2. 继承的`CoroutineContext`是`CoroutineScope`或者其父协程的`CoroutineContext`；
+  3. 传入协程构建器的参数的优先级高于继承的上下文参数，因此会覆盖对应的参数值。
+  
+  ```kotlin
+  @Test
+  fun `test CoroutineContext extend2`() = runBlocking {
+      val coroutineExceptionHandler = CoroutineExceptionHandler { _, exception ->
+          println("Caught $exception")
+      }
+      val scope = CoroutineScope(
+          Job() + Dispatchers.Main + coroutineExceptionHandler
+      )
+      // 新的CoroutineContext = 父级CoroutineContext + Job()
+      val job = scope.launch(Dispatchers.IO) {
+          // 新协程
+      }
+  }
+  ```
+  
+  最终的父级`CoroutineContext`会内含`Dispatchers.IO`而不是`scope`对象里的`Dispatchers.Main`，因为它被协程的构建器里的参数覆盖了。此外，注意一下父级`CoroutineContext`里的`Job`是`scope`对象的`Job`（红色），而新的`Job`实例（绿色）会赋值给新的协程的`CoroutineContext`。
+  
+  <img src="img/协程上下文的确定.png" alt="12" style="zoom: 67%;" />
+
+### 5. 协程的异常处理
+
++ **异常处理的必要性**
+
+  当应用出现一些意外情况时，给用户提供合适的体验非常重要，一方面，目睹应用崩溃是个很糟糕的体验，另一方面，在用户操作失败时，也必须要能给出正确的提示信息。
+
+#### 5.1 异常的传播
+
+协程构建器有两种形式：==自动传播异常==（`launch`与`actor`），==向用户暴露异常==（`async`与`produce`）当这些构建器用于创建一个==根协程==时（该协程不是另一个协程的子协程），前者这类构建器，异常会在它发生的第一时间被抛出，而后者则依赖用户来最终消费异常，例如通过`await`或`receive`。
+
++ **非根协程的异常**
+
+  其他协程所创建的协程中，产生的异常总是会被传播。
+
+  ```kotlin
+  ![异常的传播特性](img/异常的传播特性.png)@Test
+  fun `test exception propagation2`() = runBlocking<Unit> {
+      val scope = CoroutineScope(Job())
+      val job = scope.launch {
+        // 非根协程异常直接抛出
+        async {
+              throw IllegalArgumentException()
+          }
+      }
+      job.join()
+  }
+  ```
+
++ **异常的传播特性**
+
+  当一个协程由于一个异常而运行失败时，它会传播这个异常并传递给它的父级。接下来，父级会进行下面几步操作：
+
+  1. 取消它自己的子级；
+  2. 取消它自己；
+  3. 将异常传播并传递给它的父级。
+
+  <img src="img/异常的传播特性.png" alt="4" style="zoom:55%;" />
+
+#### 5.2 SupervisorJob
+
+使用`SupervisorJob`时，一个子协程的运行失败不会影响到其他子协程。`SupervisorJob`不会传播异常给它的父级，它会==让子协程自己处理异常==。
+
+这种需求常见于在作用域内定义作业的UI组件，如果任何一个UI的子作业执行失败了，它并不总是有必要取消整个UI组件，但是如果UI组件被销毁了，由于它的结果不再被需要了，它就有必要使所有的子作业执行失败。
+
+#### 5.3 异常的捕获
+
+使用==`CoroutineExceptionHandler`==对协程的异常进行捕获。
+
+以下的条件被满足时，异常就会被捕获：
+
+1. ==时机==：异常是被自动抛出异常的协程所抛出的（使用launch，而不是async时）；
+2. ==位置==：在`CoroutineScope`的`CoroutineContext`中或在一个根协程（`CoroutineScope`或者`supervisorScope`的直接子协程）中.
+
