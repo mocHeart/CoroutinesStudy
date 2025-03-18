@@ -1,5 +1,6 @@
 package com.hg.crs.test03
 
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -41,6 +42,23 @@ class CoroutineTest03 {
             }.await()
         }
         job.join()
+    }
+
+    /**
+     * 传入协程构建器的参数的优先级高于继承的上下文参数，因此会覆盖对应的参数值
+     */
+    @Test
+    fun `test CoroutineContext extend2`() = runBlocking {
+        val coroutineExceptionHandler = CoroutineExceptionHandler { _, exception ->
+            println("Caught $exception")
+        }
+        val scope = CoroutineScope(
+            Job() + Dispatchers.Main + coroutineExceptionHandler
+        )
+        // 新的CoroutineContext = 父级CoroutineContext + Job()
+        val job = scope.launch(Dispatchers.IO) {
+            // 新协程
+        }
     }
 
 }
