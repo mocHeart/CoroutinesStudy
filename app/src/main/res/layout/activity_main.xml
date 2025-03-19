@@ -49,6 +49,13 @@
                 android:text="05:协程+ViewModel+LiveData_Binding"
                 android:textColor="@color/white"
                 android:textSize="18sp" />
+            <Button
+                android:id="@+id/btn_dem06"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="06:协程异常捕获"
+                android:textColor="@color/white"
+                android:textSize="18sp" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

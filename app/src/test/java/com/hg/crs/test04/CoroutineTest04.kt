@@ -1,19 +1,24 @@
 package com.hg.crs.test04
 
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.supervisorScope
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
+import okio.IOException
 import org.junit.Test
 
 class CoroutineTest04 {
@@ -66,7 +71,7 @@ class CoroutineTest04 {
      * 父协程取消，所有子协程也会被取消
      */
     @Test
-    fun `test SupervisorJob `() = runBlocking<Unit> {
+    fun `test SupervisorJob`() = runBlocking<Unit> {
         //val supervisor = CoroutineScope(Job())
         val supervisor = CoroutineScope(SupervisorJob())
         val job1 = supervisor.launch {
@@ -90,7 +95,7 @@ class CoroutineTest04 {
      * 使用supervisorJob作用域创建的协程和使用SupervisorJob时是一致的
      */
     @Test
-    fun `test supervisorJob `() = runBlocking<Unit> {
+    fun `test supervisorJob`() = runBlocking<Unit> {
         supervisorScope {
             launch {
                 delay(100)
@@ -109,7 +114,7 @@ class CoroutineTest04 {
      * 使用supervisorJob作用域创建的协程，作用域中抛出的异常会取消所有子协程
      */
     @Test
-    fun `test supervisorJob2 `() = runBlocking<Unit> {
+    fun `test supervisorJob2`() = runBlocking<Unit> {
         supervisorScope {
             val child1 = launch {
                 try {
@@ -124,4 +129,146 @@ class CoroutineTest04 {
             throw AssertionError()
         }
     }
+
+
+    /**
+     * launch-自动传播的异常能够被handler捕获
+     * async-向用户暴露的异常不能够被handler捕获
+     */
+    @Test
+    fun `test CoroutineExceptionHandler`() = runBlocking<Unit> {
+        val handler = CoroutineExceptionHandler { _, exception ->
+            println("Caught $exception")
+        }
+        val job = GlobalScope.launch(handler) {
+            throw AssertionError()
+        }
+        val deferred = GlobalScope.async(handler) {
+            throw ArithmeticException()
+        }
+        job.join()
+        deferred.await()
+    }
+
+    /**
+     * 在`CoroutineScope`的`CoroutineContext`上下文中，
+     *  异常处理器Handler在外部协程，异常能被捕获到
+     */
+    @Test
+    fun `test CoroutineExceptionHandler2`() = runBlocking<Unit> {
+        val handler = CoroutineExceptionHandler { _, exception ->
+            println("Caught $exception")
+        }
+        val scope = CoroutineScope(Job())
+        // 能被捕获到异常
+        val job = scope.launch(handler) {
+            launch {
+                throw IllegalArgumentException()
+            }
+        }
+        job.join()
+    }
+
+    /**
+     * 在`CoroutineScope`的`CoroutineContext`上下文中，
+     *  异常处理器Handler在内部协程，异常不能被捕获到
+     */
+    @Test
+    fun `test CoroutineExceptionHandler3`() = runBlocking<Unit> {
+        val handler = CoroutineExceptionHandler { _, exception ->
+            println("Caught $exception")
+        }
+        val scope = CoroutineScope(Job())
+        // 不能被捕获到异常
+        val job = scope.launch {
+            launch(handler) {
+                throw IllegalArgumentException()
+            }
+        }
+        job.join()
+    }
+
+    /**
+     * 当子协程被取消时，不会取消它的父协程
+     */
+    @Test
+    fun `test cancel and exception`() = runBlocking<Unit> {
+        val job = launch {
+            val child = launch {
+                try {
+                    delay(Long.MAX_VALUE)
+                } finally {
+                    println("Child is cancelled.")
+                }
+            }
+            yield()
+            println("Cancelling child.")
+            child.cancelAndJoin()
+            yield()
+            println("Parent is not cancelled.")
+        }
+        job.join()
+    }
+
+    /**
+     * 协程遇到了`CancellationException`以外的异常，
+     * 该异常将取消父协程。
+     * 当父协程的所有子协程都结束后，异常才会被父协程处理
+     */
+    fun `test cancel and exception2`() = runBlocking<Unit> {
+        val handler = CoroutineExceptionHandler { _, exception ->
+            println("Caught $exception")
+        }
+        val job = GlobalScope.launch(handler) {
+            launch {
+                try {
+                    delay(Long.MAX_VALUE)
+                } finally {
+                    withContext(NonCancellable) {
+                        println("Children are cancelled, but exception is not handled until all children terminate")
+                        delay(100)
+                        println("The first child finished its non cancellable block")
+                    }
+                }
+            }
+            launch {
+                delay(10)
+                println("Second child throws an exception.")
+                throw ArithmeticException()
+            }
+        }
+        job.join()
+    }
+
+    /**
+     * 异常的聚合
+     */
+    @Test
+    fun `test exception aggregation`() = runBlocking<Unit> {
+        val handler = CoroutineExceptionHandler { _, exception ->
+            println("Caught $exception ${exception.suppressed.contentToString()}")
+        }
+        val job = GlobalScope.launch(handler) {
+            launch {
+                try {
+                    delay(Long.MAX_VALUE)
+                } finally {
+                    throw ArithmeticException()  // 2
+                }
+            }
+            launch {
+                try {
+                    delay(Long.MAX_VALUE)
+                } finally {
+                    throw IndexOutOfBoundsException()  // 3
+                }
+            }
+            launch {
+                delay(100)
+                throw IOException()  // 1
+            }
+        }
+        job.join()
+    }
+
 }
