@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.conflate
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.reduce
 import kotlinx.coroutines.flow.take
@@ -461,5 +463,101 @@ class CoroutineTest05 {
             .flatMapLatest { requestFlow(it) }
             .collect { println("$it at ${System.currentTimeMillis() - startTime} ms from start")}
     }
+
+
+    /************************  Flow异常处理 ************************/
+    fun simpleFlow9() = flow<Int> {
+        for (i in 1..3) {
+            println("Emitting $i")
+            emit(i)
+        }
+    }
+
+    /**
+     * Flow异常：
+     *    try..catch 捕获下游的异常
+     */
+    @Test
+    fun `test flow exception`() = runBlocking {
+        try {
+            simpleFlow9().collect { value ->
+                println(value)
+                check(value <= 1) { "Collected $value" }
+            }
+        } catch (e: Throwable) {
+            println("Caught $e")
+        }
+    }
+
+    /**
+     * Flow异常：
+     *    catch{} 捕获上游的异常
+     *    可以在异常中发送值作为恢复
+     */
+    @Test
+    fun `test flow exception2`() = runBlocking<Unit> {
+        flow {
+            emit(1)
+            throw ArithmeticException()
+        }.catch {
+            e: Throwable -> println("Caught $e")
+            emit(10)
+        }.flowOn(Dispatchers.IO)
+         .collect { println(it) }
+    }
+
+
+    fun simpleFlow10() = (1..3).asFlow()
+
+    /**
+     * 流的完成:
+     *   命令式`finally`块
+     */
+    @Test
+    fun `test flow complete in finally`() = runBlocking {
+        try {
+            simpleFlow10().collect{ println(it)}
+        } finally {
+            println("Done")
+        }
+    }
+
+    /**
+     * 流的完成:
+     *   当流收集完成时（普通情况或异常情况），执行一个动作。
+     */
+    @Test
+    fun `test flow complete in onCompletion`() = runBlocking {
+        simpleFlow10().onCompletion { println("Done") }
+            .collect{ println(it)}
+    }
+
+    fun simpleFlow11() = flow<Int> {
+        emit(1)
+        throw RuntimeException()
+    }
+
+    /**
+     * onCompletion() 能捕获到出现的上游和下游的异常
+     */
+    @Test
+    fun `test flow complete in onCompletion2`() = runBlocking {
+        simpleFlow11()
+            .onCompletion { exception ->
+                if (exception != null) println("Flow completed exceptionally")
+            }
+            .catch { exception -> println("Caught $exception")}
+            .collect{ println(it)}
+
+        simpleFlow11()
+            .onCompletion { exception ->
+                if (exception != null) println("Flow completed exceptionally")
+            }
+            .collect{ value ->
+                println(value)
+                check(value <= 1) { "Collected $value" }
+            }
+    }
+
 
 }
