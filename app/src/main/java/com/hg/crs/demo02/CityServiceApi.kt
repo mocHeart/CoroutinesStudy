@@ -21,8 +21,8 @@ val cityServiceApi: CityServiceApi by lazy {
     val retrofit = retrofit2.Retrofit.Builder()
         .client(OkHttpClient().newBuilder().addInterceptor {
             it.proceed(it.request()).apply {
-                Log.i("JY>", "Request URL: ${it.request().url()}")
-                Log.i("JY>", "code: ${code()}")
+                //Log.i("JY>", "Request URL: ${it.request().url()}")
+                //Log.i("JY>", "code: ${code()}")
             }
         }.build())
         // 返回JSON串: [{"id":1,"name":"北京"}, {"id":2,"name":"上海"}]

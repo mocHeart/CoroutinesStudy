@@ -507,48 +507,34 @@
 
   <img src="img/BoradcastChannel.png" alt="8" style="zoom:80%;" />
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #### 7.2 多路复用
 
++ **什么是多路复用**
 
+  数据通信系统或计算机网络系统中，传输媒体的带宽或容量往往会大于传输单一信号的需求，为了有效地利用通信线路，希望==一个信道同时传输多路信号==，这就是所谓的多路复用技术（Multiplexing）。
 
++ **复用多个await**
 
+  两个API分别从网络和本地缓存获取数据，期望哪个先返回就先用哪个做展示。
 
+  ![9](img/复用多个await.png)
 
++ **复用多个Channel**
 
+  跟`await`类似，会接收到最快的那个`channel`消息。
 
++ **SelectClause**
 
+  我们怎么知道哪些事件可以被`select`呢？其实所有能够被`select`的事件都是`SelectClause N`类型，包括：
 
+  1. ==SelectClause0==：对应事件没有返回值，例如`join`没有返回值，那么`onJoin`就是`SelectClause N`类型。使用时，` onJoin`的参数是一个无参函数；
+  2. ==SelectClause1==：对应事件有返回值，前面的`onAwait`和`onReceive`都是此类情况；
+  3. ==SelectClause2==：对应事件有返回值，此外还需要一个额外的参数，例如`Channel.onSend`有两个参数，第一个是`Channel`数据类型的值，表示即将发送的值；第二个是发送成功时的回调参数。
 
+  如果我们想要确认挂起函数是否支持`select`，只需要查看其是否存在对应的`SelectClause N`类型可回调即可。
 
++ **使用Flow实现多路复用**
 
-
-
-
-
-
-
-
-
-
+  多数情况下，我们可以通过构造合适的`FlOW`来实现多路复用的效果。
 
 #### 7.3 并发安全
