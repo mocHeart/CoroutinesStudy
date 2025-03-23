@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.cancellable
@@ -12,12 +13,19 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.reduce
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.flow.zip
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -26,6 +34,8 @@ import org.junit.Test
 import kotlin.system.measureTimeMillis
 
 class CoroutineTest05 {
+
+    /************************  认识Flow ************************/
 
     fun simpleList(): List<Int> = listOf(1, 2, 3)
 
@@ -306,14 +316,150 @@ class CoroutineTest05 {
 
 
 
+    /************************  Flow操作符 ************************/
+    suspend fun performRequest(request: Int): String {
+        delay(1000)
+        return "response $request"
+    }
 
 
+    /**
+     * 操作符：
+     *   map{}  转换元素
+     *   transform 将一个元素转换为多个
+     */
+    @Test
+    fun `test transform flow operator`() = runBlocking<Unit> {
+        (1..3).asFlow()
+            .map { request -> performRequest(request) }
+            .collect { value -> println(value) }
+
+        (1..3).asFlow()
+            .transform { request ->
+                emit("Making request $request")
+                emit(performRequest(request))
+            }
+            .collect { value -> println(value) }
+    }
+
+    fun numbers() = flow<Int> {
+        try {
+            emit(1)
+            emit(2)
+            println("This line will not execute")
+            emit(3)
+        } finally {
+            println("Finally in numbers")
+        }
+    }
+
+    /**
+     * 操作符：
+     *   take()  限长操作符，至收集指定数量的元素
+     */
+    @Test
+    fun `test limit length operator`() = runBlocking<Unit> {
+        numbers().take(2).collect { value -> println(value) }
+    }
 
 
+    /**
+     * 末端操作符：
+     *   reduce{}  将流规约到单个值
+     */
+    @Test
+    fun `test terminal operator`() = runBlocking<Unit> {
+        val sum = (1..5).asFlow()
+            .map { it * it }
+            .reduce { a, b -> a + b}
+        println(sum)
+    }
+
+    /**
+     * 组合多个流:
+     *   zip{} 用于组合两个流中的相关值
+     */
+    @Test
+    fun `test flow zip`() = runBlocking<Unit> {
+        val numbers = (1..3).asFlow()
+        val strs = flowOf("one", "two", "three")
+        numbers.zip(strs) { a, b -> "$a -> $b" }
+            .collect { println(it) }
+    }
+
+    /**
+     * 组合多个流时，需要等待每个元素产生
+     */
+    @Test
+    fun `test flow zip2`() = runBlocking<Unit> {
+        val numbers = (1..3).asFlow().onEach { delay(300) }
+        val strs = flowOf("one", "two", "three").onEach { delay(400) }
+        val startTime = System.currentTimeMillis()
+        numbers.zip(strs) { a, b -> "$a -> $b" }.collect {
+            println("$it at ${System.currentTimeMillis() - startTime} ms from start")
+        }
+    }
 
 
+    fun requestFlow(i: Int) = flow<String> {
+        emit("$i: First")
+        delay(500)
+        emit("$i: Second")
+    }
 
+    /**
+     * 展平流：
+     *   `flatMapConcat`连接模式
+     *    1: First at 1030 ms from start
+     *    1: Second at 1549 ms from start
+     *    2: First at 2552 ms from start
+     *    2: Second at 3055 ms from start
+     *    3: First at 4069 ms from start
+     *    3: Second at 4585 ms from start
+     */
+    @Test
+    fun `test flatMapConcat`() = runBlocking<Unit> {
+        val startTime = System.currentTimeMillis()
+        (1..3).asFlow()
+            .onEach { delay(1000) }
+            .flatMapConcat { requestFlow(it) }
+            .collect { println("$it at ${System.currentTimeMillis() - startTime} ms from start")}
+    }
 
+    /**
+     * 展平流：
+     *   `flatMapMerge`合并模式
+     *    1: First at 158 ms from start
+     *    2: First at 248 ms from start
+     *    3: First at 359 ms from start
+     *    1: Second at 668 ms from start
+     *    2: Second at 761 ms from start
+     *    3: Second at 872 ms from start
+     */
+    @Test
+    fun `test flatMapMerge`() = runBlocking<Unit> {
+        val startTime = System.currentTimeMillis()
+        (1..3).asFlow()
+            .onEach { delay(100) }
+            .flatMapMerge { requestFlow(it) }
+            .collect { println("$it at ${System.currentTimeMillis() - startTime} ms from start")}
+    }
 
+    /**
+     * 展平流：
+     *   `flatMapLatest`最新展平模式
+     *    1: First at 159 ms from start
+     *    2: First at 297 ms from start
+     *    3: First at 411 ms from start
+     *    3: Second at 925 ms from start
+     */
+    @Test
+    fun `test flatMapLates`() = runBlocking<Unit> {
+        val startTime = System.currentTimeMillis()
+        (1..3).asFlow()
+            .onEach { delay(100) }
+            .flatMapLatest { requestFlow(it) }
+            .collect { println("$it at ${System.currentTimeMillis() - startTime} ms from start")}
+    }
 
 }
