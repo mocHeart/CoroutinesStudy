@@ -48,7 +48,6 @@ dependencies {
 
     implementation libs.androidx.room.runtime
     implementation libs.androidx.room.ktx
-    annotationProcessor libs.androidx.room.compiler
 
     implementation libs.androidx.navigation.fragment.ktx
     implementation libs.androidx.navigation.ui.ktx
@@ -75,4 +74,5 @@ dependencies {
     androidTestImplementation libs.androidx.espresso.core
 
     kapt libs.moshi.kotlin.codegen
+    kapt libs.androidx.room.compiler
 }

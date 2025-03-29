@@ -12,10 +12,17 @@
         <action
             android:id="@+id/action_d7HomeFragment_to_d07DownloadFragment"
             app:destination="@id/d07DownloadFragment" />
+        <action
+            android:id="@+id/action_d7HomeFragment_to_d07UserFragment"
+            app:destination="@id/d07UserFragment" />
     </fragment>
     <fragment
         android:id="@+id/d07DownloadFragment"
         android:name="com.hg.crs.demo07.fragment.D07DownloadFragment"
         android:label="fragment_d07_download"
         tools:layout="@layout/fragment_d07_download" />
+    <fragment
+        android:id="@+id/d07UserFragment"
+        android:name="com.hg.crs.demo07.fragment.D07UserFragment"
+        android:label="D07UserFragment" />
 </navigation>
