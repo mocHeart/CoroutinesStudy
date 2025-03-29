@@ -17,9 +17,6 @@
         android:theme="@style/Theme.CoroutinesStudy"
         tools:targetApi="31">
         <activity
-            android:name=".demo06.Demo06Activity"
-            android:exported="false" />
-        <activity
             android:name=".demo01.Demo01Activity"
             android:exported="true" />
         <activity
@@ -33,6 +30,12 @@
             android:exported="true" />
         <activity
             android:name=".demo05.Demo05Activity"
+            android:exported="true" />
+        <activity
+            android:name=".demo06.Demo06Activity"
+            android:exported="true" />
+        <activity
+            android:name=".demo07.Demo07Activity"
             android:exported="true" />
         <activity
             android:name=".MainActivity"

@@ -36,12 +36,26 @@ android {
     kotlinOptions {
         jvmTarget = '11'
     }
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {
 
     // 吐司框架：https://github.com/getActivity/Toaster
     implementation libs.github.toaster
+
+    implementation libs.androidx.room.runtime
+    implementation libs.androidx.room.ktx
+    annotationProcessor libs.androidx.room.compiler
+
+    implementation libs.androidx.navigation.fragment.ktx
+    implementation libs.androidx.navigation.ui.ktx
+    implementation libs.androidx.lifecycle.livedata.ktx
+    implementation libs.swiperefreshlayout
+    implementation libs.legacy.support.v4
+    implementation libs.converter.gson
 
     // kotlin支持(委托方式等)
     implementation libs.androidx.activity.activity.ktx
@@ -60,5 +74,5 @@ dependencies {
     androidTestImplementation libs.androidx.junit
     androidTestImplementation libs.androidx.espresso.core
 
-    kapt 'com.squareup.moshi:moshi-kotlin-codegen:1.15.2'
+    kapt libs.moshi.kotlin.codegen
 }
