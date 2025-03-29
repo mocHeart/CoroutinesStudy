@@ -25,8 +25,14 @@ class D07HomeFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        mBinding.btnFlowAndDownload.setOnClickListener {
-            findNavController().navigate(R.id.action_d7HomeFragment_to_d07DownloadFragment)
+        mBinding.apply {
+            btnFlowAndDownload.setOnClickListener {
+                findNavController().navigate(R.id.action_d7HomeFragment_to_d07DownloadFragment)
+            }
+
+            btnFlowAndRoom.setOnClickListener {
+                findNavController().navigate(R.id.action_d7HomeFragment_to_d07UserFragment)
+            }
         }
     }
 }
