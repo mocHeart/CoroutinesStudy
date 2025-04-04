@@ -41,6 +41,10 @@ class D07HomeFragment : Fragment() {
             btnStateFlow.setOnClickListener {
                 findNavController().navigate(R.id.action_d7HomeFragment_to_d07NumberFragment)
             }
+
+            btnSharedFlow.setOnClickListener {
+                findNavController().navigate(R.id.action_d7HomeFragment_to_d07SharedFlowFragment)
+            }
         }
     }
 }

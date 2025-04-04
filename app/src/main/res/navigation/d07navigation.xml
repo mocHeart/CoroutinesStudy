@@ -21,6 +21,9 @@
         <action
             android:id="@+id/action_d7HomeFragment_to_d07NumberFragment"
             app:destination="@id/d07NumberFragment" />
+        <action
+            android:id="@+id/action_d7HomeFragment_to_d07SharedFlowFragment"
+            app:destination="@id/d07SharedFlowFragment" />
     </fragment>
     <fragment
         android:id="@+id/d07DownloadFragment"
@@ -41,4 +44,9 @@
         android:name="com.hg.crs.demo07.fragment.D07NumberFragment"
         android:label="fragment_d07_number"
         tools:layout="@layout/fragment_d07_number" />
+    <fragment
+        android:id="@+id/d07SharedFlowFragment"
+        android:name="com.hg.crs.demo07.fragment.D07SharedFlowFragment"
+        android:label="fragment_d07_shared_flow"
+        tools:layout="@layout/fragment_d07_shared_flow" />
 </navigation>
