@@ -579,5 +579,15 @@
 
 #### 8.4 Flow与Retrofit
 
+<img src="img/Flow与Retrofit应用.png" style="zoom:55%;" />
+
+#### 8.5 冷流还是热流
+
+`Flow`是冷流，什么是冷流？简单来说，如果`Flow`有了订阅者`Collector`以后，发射出来的值才会实实在在的存在于内存之中，这跟懒加载的概念很像。
+
+与之相对的是热流，`StateFlow`和`SharedFlow`是热流，在垃圾回收之前，都是存在内存之中，并且处于活跃状态的。
+
+
+
 
 

@@ -37,6 +37,10 @@ class D07HomeFragment : Fragment() {
             btnFlowAndRetrofit.setOnClickListener {
                 findNavController().navigate(R.id.action_d7HomeFragment_to_d07ArticleFragment)
             }
+
+            btnStateFlow.setOnClickListener {
+                findNavController().navigate(R.id.action_d7HomeFragment_to_d07NumberFragment)
+            }
         }
     }
 }
