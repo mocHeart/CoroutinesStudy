@@ -11,6 +11,7 @@ import com.hg.crs.demo04.Demo04Activity
 import com.hg.crs.demo05.Demo05Activity
 import com.hg.crs.demo06.Demo06Activity
 import com.hg.crs.demo07.Demo07Activity
+import com.hg.crs.demo08.Demo08Activity
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,6 +50,10 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.btn_dem07).setOnClickListener{
             intent = Intent(this, Demo07Activity::class.java)
+            startActivity(intent)
+        }
+        findViewById<Button>(R.id.btn_dem08).setOnClickListener{
+            intent = Intent(this, Demo08Activity::class.java)
             startActivity(intent)
         }
     }

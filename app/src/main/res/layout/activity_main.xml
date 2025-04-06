@@ -63,6 +63,13 @@
                 android:text="07:协程Flow的综合应用"
                 android:textColor="@color/white"
                 android:textSize="18sp" />
+            <Button
+                android:id="@+id/btn_dem08"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="08:Paging3"
+                android:textColor="@color/white"
+                android:textSize="18sp" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

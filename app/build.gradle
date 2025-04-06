@@ -46,6 +46,10 @@ dependencies {
     // 吐司框架：https://github.com/getActivity/Toaster
     implementation libs.github.toaster
 
+    implementation libs.paging.runtime.ktx
+    implementation libs.com.squareup.picasso.picasso3
+    implementation libs.swiperefreshlayout
+
     implementation libs.androidx.room.runtime
     implementation libs.androidx.room.ktx
 
